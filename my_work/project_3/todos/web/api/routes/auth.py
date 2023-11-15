@@ -4,9 +4,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from api import api_models, auth
-from api.responses import UNAUTHORIZED_RESPONSE
 from datastore.database import DBDependency
+from web.api import api_models, auth
+from web.api.responses import UNAUTHORIZED_RESPONSE
 
 # ----------- Routers -----------
 router = APIRouter(tags=["auth"], prefix="/auth")

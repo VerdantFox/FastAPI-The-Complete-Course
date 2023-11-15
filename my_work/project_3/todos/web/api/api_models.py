@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 
-import api.field_types as ft
+import web.api.field_types as ft
 from permissions import Role
 
 

@@ -6,12 +6,12 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from passlib.context import CryptContext
 
-import api.field_types as ft
 import mixins
-from api import api_models, errors
+import web.api.field_types as ft
 from datastore import db_models
 from datastore.database import DBDependency
 from permissions import Role
+from web.api import api_models, errors
 
 # ----------- Constants -----------
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
