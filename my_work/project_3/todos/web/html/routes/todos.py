@@ -23,7 +23,7 @@ from web import auth, errors
 from web import field_types as ft
 from web.api import api_models
 from web.auth import LoggedInUser
-from web.web_app.const import templates
+from web.html.const import templates
 from web.web_models import UnauthenticatedUser
 
 # ----------- Routers -----------

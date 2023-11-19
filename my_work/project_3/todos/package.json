@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Teddy's personal website",
   "scripts": {
-    "watch": "tailwindcss --config ./web/web_app/tailwind.config.js --input ./web/web_app/input.css --output ./web/web_app/static/css/styles.css --watch",
-    "build": "tailwindcss --config ./web/web_app/tailwind.config.js --minify --input ./web/web_app/input.css --output ./web/web_app/static/css/styles.css"
+    "watch": "tailwindcss --config ./web/html/tailwind.config.js --input ./web/html/input.css --output ./web/html/static/css/styles.css --watch",
+    "build": "tailwindcss --config ./web/html/tailwind.config.js --minify --input ./web/html/input.css --output ./web/html/static/css/styles.css"
   },
   "author": "Theodore Williams",
   "license": "MIT",

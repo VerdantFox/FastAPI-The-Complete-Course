@@ -805,10 +805,6 @@ select {
   display: none;
 }
 
-.h-10 {
-  height: 2.5rem;
-}
-
 .h-4 {
   height: 1rem;
 }
@@ -819,10 +815,6 @@ select {
 
 .h-8 {
   height: 2rem;
-}
-
-.w-10 {
-  width: 2.5rem;
 }
 
 .w-4 {
@@ -1169,11 +1161,5 @@ select {
 
   .max-lg\:grid-cols-1 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
-  .lg\:hidden {
-    display: none;
   }
 }

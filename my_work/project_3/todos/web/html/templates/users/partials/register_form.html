@@ -1,4 +1,4 @@
-<form method="POST" action="{{ url_for('web_app:register_post' ) }}">
+<form method="POST" action="{{ url_for('html:register_post' ) }}">
   {{ render_partial('shared/partials/flash_message.html', message=message) }}
   <div class="grid grid-cols-2 gap-6 max-lg:grid-cols-1 mb-6">
     {{ render_partial('shared/partials/forms/field.html', field=form.email) }}
@@ -12,7 +12,7 @@
   <p>
     Already have an account?
     <a
-      href="{{ url_for('web_app:login_get') }}"
+      href="{{ url_for('html:login_get') }}"
       class="text-teal-600 hover:text-teal-700 hover:underline underline-offset-4"
       >Log in here...</a
     >

@@ -4,8 +4,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 import datastore.db_models as db_models
 from datastore.database import engine
-from web.api import api_main
-from web.web_app import web_app_main
+from web.api import main as api_main
+from web.html import main as html_main
 
 SESSION_SECRET = "SUPER-SECRET-KEY"
 
@@ -22,4 +22,4 @@ async def api_home(request: Request):
 
 
 app.mount("/api", api_main.app, name="api")
-app.mount("/", web_app_main.app, name="web_app")
+app.mount("/", html_main.app, name="html")

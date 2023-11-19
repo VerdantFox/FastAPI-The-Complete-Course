@@ -2,7 +2,7 @@
   class="group flex justify-between items-center gap-6 hover:bg-teal-50 py-6 px-4 text-lg"
 >
   <button
-    hx-post="{{ url_for('web_app:add_todo') }}"
+    hx-post="{{ url_for('html:add_todo') }}"
     hx-include="next input"
     hx-target="closest li"
     hx-swap="beforebegin"
@@ -20,7 +20,7 @@
   <input
     name="title"
     type="text"
-    hx-post="{{ url_for('web_app:add_todo') }}"
+    hx-post="{{ url_for('html:add_todo') }}"
     hx-trigger="keyup[keyCode==13]"
     hx-include="this"
     hx-target="closest li"

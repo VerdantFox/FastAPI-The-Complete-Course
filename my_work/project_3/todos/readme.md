@@ -41,5 +41,5 @@ uvicorn web.main:app --reload --reload-include="*.html" --reload-include="*.css"
 In a separate terminal, hot-reload a proxy server to localhost:800 with:
 
 ```bash
-browser-sync 'http://localhost:8000' 'web/web_app/static' -w -f .
+browser-sync 'http://localhost:8000' 'web/html/static' -w -f .
 ```

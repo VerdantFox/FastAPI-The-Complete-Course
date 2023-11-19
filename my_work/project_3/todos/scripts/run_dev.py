@@ -55,7 +55,7 @@ def run_browser_sync() -> None:
     args = [
         "browser-sync",
         "http://localhost:8000",
-        "web/web_app/static",
+        "web/html/static",
         "-w",
         "-f",
         ".",

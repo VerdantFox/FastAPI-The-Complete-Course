@@ -2,7 +2,7 @@ from fastapi import Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
-from web.api.api_main import app
+from web.api.main import app
 from web.errors import WebError
 
 

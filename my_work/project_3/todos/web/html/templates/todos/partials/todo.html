@@ -12,7 +12,7 @@
         {% if todo.completed %}
           checked
         {% endif %}
-        hx-patch="{{ url_for('web_app:update_todo', todo_id=todo.id) }}"
+        hx-patch="{{ url_for('html:update_todo', todo_id=todo.id) }}"
         hx-target="closest li"
         hx-swap="outerHTML"
       />
@@ -21,12 +21,12 @@
         name="title"
         value="{{ todo.title }}"
         class="grow px-3 py-1 rounded-md group-hover:ring-1 group-hover:ring-neutral-300 focus-visible:!ring-4 focus-visible:!ring-teal-300 border !border-transparent"
-        hx-patch="{{ url_for('web_app:update_todo', todo_id=todo.id) }}"
+        hx-patch="{{ url_for('html:update_todo', todo_id=todo.id) }}"
         hx-target="closest li"
         hx-swap="outerHTML"
       />
       <button
-        hx-delete="{{ url_for('web_app:delete_todo', todo_id=todo.id) }}"
+        hx-delete="{{ url_for('html:delete_todo', todo_id=todo.id) }}"
         hx-target="closest li"
         hx-swap="delete"
         type="button"

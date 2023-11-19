@@ -14,8 +14,8 @@ from permissions import Role
 from web import auth
 from web import field_types as ft
 from web.api.routes.auth import login_for_access_token
-from web.web_app.const import templates
-from web.web_app.flash_messages import FlashCategory, FlashMessage
+from web.html.const import templates
+from web.html.flash_messages import FlashCategory, FlashMessage
 from web.web_models import UnauthenticatedUser
 
 # ----------- Routers -----------
@@ -167,7 +167,7 @@ async def register_post(
         timeout=5,
     ).flash(request)
     return RedirectResponse(
-        request.url_for("web_app:login_get").include_query_params(
+        request.url_for("html:login_get").include_query_params(
             username=user_model.username
         ),
         status_code=status.HTTP_302_FOUND,
@@ -177,7 +177,7 @@ async def register_post(
 @router.get("/logout", response_class=HTMLResponse)
 async def logout(request: Request):
     response = RedirectResponse(
-        request.url_for("web_app:login_get"), status_code=status.HTTP_302_FOUND
+        request.url_for("html:login_get"), status_code=status.HTTP_302_FOUND
     )
     response.delete_cookie(key="access_token", httponly=True)
     FlashMessage(

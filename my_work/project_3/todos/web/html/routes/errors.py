@@ -10,7 +10,7 @@ from permissions import Role
 from web import field_types as ft
 from web.api import api_models, errors
 from web.auth import LoggedInUser, LoggedInUserOptional
-from web.web_app.const import templates
+from web.html.const import templates
 
 # ----------- Routers -----------
 router = APIRouter(tags=["error"], prefix="/errors")
@@ -29,9 +29,9 @@ async def general_error(
     status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
     detail: str = "Unknown error",
 ):
-    web_app_error = WebAppError(detail=detail, status_code=status_code)
+    html_error = WebAppError(detail=detail, status_code=status_code)
     return templates.TemplateResponse(
         "errors/general_error.html",
-        {"request": request, "error": web_app_error},
-        status_code=web_app_error.status_code,
+        {"request": request, "error": html_error},
+        status_code=html_error.status_code,
     )
