@@ -35,7 +35,9 @@ async def get_todos(request: Request, db: DBDependency, current_user: LoggedInUs
 
 
 class CreateTodoForm(Form):
-    title: str = StringField("Title", validators=[validators.Length(min=3, max=25)])
+    title: StringField = StringField(
+        "Title", validators=[validators.Length(min=3, max=25)]
+    )
 
 
 @router.post("")
@@ -61,8 +63,10 @@ async def add_todo(request: Request, db: DBDependency, current_user: LoggedInUse
 
 
 class UpdateTodoForm(Form):
-    title: str = StringField("Title", validators=[validators.Length(min=3, max=25)])
-    completed: bool = BooleanField("Completed", default=False)
+    title: StringField = StringField(
+        "Title", validators=[validators.Length(min=3, max=25)]
+    )
+    completed: BooleanField = BooleanField("Completed", default=False)
 
 
 @router.patch("/{todo_id}")

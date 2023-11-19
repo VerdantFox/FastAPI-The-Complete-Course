@@ -1,14 +1,15 @@
 from typing import Annotated
 
 import sqlalchemy
-from fastapi import APIRouter, HTTPException, Query, Request, status
+from fastapi import APIRouter, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
+from starlette.templating import _TemplateResponse
 from wtforms import Form, PasswordField, StringField, validators
 
 from app.datastore import db_models
 from app.datastore.database import DBDependency
 from app.permissions import Role
-from app.web import auth
+from app.web import auth, errors
 from app.web.api.routes.auth import login_for_access_token
 from app.web.html.const import templates
 from app.web.html.flash_messages import FlashCategory, FlashMessage
@@ -21,16 +22,18 @@ REGISTER_TEMPLATE = "users/register.html"
 
 
 class LoginForm(Form):
-    username: str = StringField(
+    username: StringField = StringField(
         "Username", validators=[validators.Length(min=3, max=25)]
     )
-    password: str = PasswordField(
+    password: PasswordField = PasswordField(
         "Password", validators=[validators.Length(min=8, max=25)]
     )
 
 
 @router.get("/login", response_class=HTMLResponse)
-async def login_get(request: Request, username: Annotated[str | None, Query()] = None):
+async def login_get(
+    request: Request, username: Annotated[str | None, Query()] = None
+) -> _TemplateResponse:
     login_form = LoginForm()
     if username:
         login_form.username.data = username
@@ -65,7 +68,7 @@ async def login_post(
             username=login_form.username.data,
             password=login_form.password.data,
         )
-    except HTTPException as e:
+    except errors.UserNotAuthenticatedError as e:
         return templates.TemplateResponse(
             LOGIN_TEMPLATE,
             {
@@ -82,20 +85,22 @@ async def login_post(
 
 
 class RegisterUserForm(Form):
-    email: str = StringField("Email", validators=[validators.Length(min=1, max=25)])
-    username: str = StringField(
+    email: StringField = StringField(
+        "Email", validators=[validators.Length(min=1, max=25)]
+    )
+    username: StringField = StringField(
         "Username", validators=[validators.Length(min=3, max=25)]
     )
-    first_name: str = StringField(
+    first_name: StringField = StringField(
         "First Name", validators=[validators.Length(min=1, max=25)]
     )
-    last_name: str = StringField(
+    last_name: StringField = StringField(
         "Last Name", validators=[validators.Length(min=1, max=25)]
     )
-    password: str = PasswordField(
+    password: PasswordField = PasswordField(
         "Password", validators=[validators.Length(min=8, max=25)]
     )
-    confirm_password: str = PasswordField(
+    confirm_password: PasswordField = PasswordField(
         "Confirm Password",
         validators=[
             validators.Length(min=8, max=25),
