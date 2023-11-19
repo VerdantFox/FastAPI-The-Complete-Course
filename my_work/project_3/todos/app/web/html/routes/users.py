@@ -1,22 +1,17 @@
-from functools import wraps
-from inspect import signature
 from typing import Annotated
 
 import sqlalchemy
 from fastapi import APIRouter, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
-from starlette.templating import _TemplateResponse
 from wtforms import Form, PasswordField, StringField, validators
 
-from datastore import db_models
-from datastore.database import DBDependency, Session
-from permissions import Role
-from web import auth
-from web import field_types as ft
-from web.api.routes.auth import login_for_access_token
-from web.html.const import templates
-from web.html.flash_messages import FlashCategory, FlashMessage
-from web.web_models import UnauthenticatedUser
+from app.datastore import db_models
+from app.datastore.database import DBDependency
+from app.permissions import Role
+from app.web import auth
+from app.web.api.routes.auth import login_for_access_token
+from app.web.html.const import templates
+from app.web.html.flash_messages import FlashCategory, FlashMessage
 
 # ----------- Routers -----------
 router = APIRouter(tags=["users"], prefix="/users")

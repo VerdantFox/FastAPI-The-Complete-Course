@@ -2,10 +2,10 @@ from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
-import datastore.db_models as db_models
-from datastore.database import engine
-from web.api import main as api_main
-from web.html import main as html_main
+from app.datastore import db_models
+from app.datastore.database import engine
+from app.web.api import main as api_main
+from app.web.html import main as html_main
 
 SESSION_SECRET = "SUPER-SECRET-KEY"
 

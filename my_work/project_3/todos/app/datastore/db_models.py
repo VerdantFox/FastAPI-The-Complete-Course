@@ -8,8 +8,8 @@ from sqlalchemy.orm import (
     relationship,
 )
 
-import mixins
-from permissions import Role
+from app import mixins
+from app.permissions import Role
 
 IntPK = Annotated[int, mapped_column(primary_key=True)]
 UniqueStr = Annotated[str, mapped_column(unique=True)]

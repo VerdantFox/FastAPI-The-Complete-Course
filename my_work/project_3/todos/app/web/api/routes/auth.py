@@ -1,14 +1,10 @@
 from datetime import timedelta
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Response
 
-from datastore.database import DBDependency
-from web import auth
-from web import field_types as ft
-from web.api import api_models
-from web.api.responses import UNAUTHORIZED_RESPONSE
+from app.datastore.database import DBDependency
+from app.web import auth
+from app.web import field_types as ft
 
 # ----------- Routers -----------
 router = APIRouter(tags=["auth"], prefix="/auth")

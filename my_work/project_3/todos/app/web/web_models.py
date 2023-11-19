@@ -1,9 +1,9 @@
 # ----------- Auth Models -----------
 from pydantic import BaseModel, EmailStr
 
-import mixins
-import web.field_types as ft
-from permissions import Role
+from app import mixins
+import app.web.field_types as ft
+from app.permissions import Role
 
 
 class UnauthenticatedUser(mixins.AuthUserMixin):

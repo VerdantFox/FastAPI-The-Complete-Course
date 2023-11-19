@@ -3,10 +3,10 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from web.html import flash_messages
-from web.html.const import STATIC_DIR, templates
-from web.html.error_handlers import register_error_handlers
-from web.html.routes import errors, todos, users
+from app.web.html import flash_messages
+from app.web.html.const import STATIC_DIR, templates
+from app.web.html.error_handlers import register_error_handlers
+from app.web.html.routes import errors, todos, users
 
 SESSION_SECRET = "SUPER-SECRET-KEY"
 

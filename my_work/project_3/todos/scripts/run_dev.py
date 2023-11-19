@@ -42,7 +42,7 @@ def run_uvicorn() -> None:
     """Start a uvicorn server with hot reloading."""
     args = [
         "uvicorn",
-        "web.main:app",
+        "app.web.main:app",
         "--reload",
         '--reload-include="*.html"',
         '--reload-include="*.css"',
@@ -55,7 +55,7 @@ def run_browser_sync() -> None:
     args = [
         "browser-sync",
         "http://localhost:8000",
-        "web/html/static",
+        "app/web/html/static",
         "-w",
         "-f",
         ".",

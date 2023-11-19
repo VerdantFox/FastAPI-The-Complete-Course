@@ -1,9 +1,8 @@
 from fastapi import Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from web import errors
-from web.html.const import templates
-from web.html.flash_messages import FlashCategory, FlashMessage
+from app.web import errors
+from app.web.html.flash_messages import FlashCategory, FlashMessage
 
 ERROR_TEMPLATE = "errors/general_error.html"
 

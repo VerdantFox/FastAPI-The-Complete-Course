@@ -1,4 +1,4 @@
-from permissions import Role
+from app.permissions import Role
 
 
 class AuthUserMixin:

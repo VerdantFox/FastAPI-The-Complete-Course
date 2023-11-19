@@ -2,12 +2,12 @@ from typing import cast
 
 from fastapi import APIRouter, status
 
-from datastore import db_models
-from datastore.database import DBDependency, Session
-from permissions import Role
-from web import auth
-from web import field_types as ft
-from web.api import api_models, errors
+from app.datastore import db_models
+from app.datastore.database import DBDependency, Session
+from app.permissions import Role
+from app.web import auth
+from app.web import field_types as ft
+from app.web.api import api_models, errors
 
 # ----------- Routers -----------
 router = APIRouter(tags=["users"], prefix="/users")
