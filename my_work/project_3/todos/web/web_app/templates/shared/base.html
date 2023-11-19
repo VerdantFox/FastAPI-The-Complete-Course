@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en">
+  {% include 'shared/partials/head.html' %}
+  <body class="text-neutral-700">
+    {% include 'shared/partials/navbar.html' %}
+    {{ render_partial('shared/partials/flash_messages.html', request=request) }}
+    {% block content %}
+    {% endblock content %}
+  </body>
+</html>

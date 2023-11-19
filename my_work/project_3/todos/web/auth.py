@@ -1,17 +1,15 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Cookie, Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from passlib.context import CryptContext
 
-import mixins
-import web.api.field_types as ft
+import web.field_types as ft
 from datastore import db_models
 from datastore.database import DBDependency
-from permissions import Role
-from web.api import api_models, errors
+from web import errors, web_models
 
 # ----------- Constants -----------
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -22,6 +20,7 @@ optional_oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth", auto_error=False)
 # ----------- Imported Dependencies -----------
 TokenDependency = Annotated[str, Depends(oauth2_bearer)]
 OptionalTokenDependency = Annotated[str | None, Depends(optional_oauth2_bearer)]
+CookieDependency = Annotated[str | None, Cookie()]  # key matches param name
 
 
 # ----------- User Constants (should be in secrets) -----------
@@ -29,33 +28,45 @@ SECRET_KEY = "a32739cd7e677c1b8dfcf560a68d59793efdd035fa14dc488192b815d3b5e498"
 ALGORITHM = "HS256"
 
 
-class UnauthenticatedUser(mixins.AuthUserMixin):
-    """Unauthenticated User model"""
-
-    id = -1
-    username = "unauthenticated_user"
-    is_active = False
-    role = Role.UNAUTHENTICATED
-
-    # non-table fields
-    is_authenticated: bool = False
-
-
 # ------------ Functions ------------
-async def get_current_user_auth_optional(
+async def get_current_user_optional_by_cookie(
+    db: DBDependency, access_token: CookieDependency = None
+) -> db_models.User | web_models.UnauthenticatedUser:
+    """Get the current user from the cookie.
+
+    Return an UnauthenticatedUser if no access_token is provided.
+    """
+    if not access_token:
+        return web_models.UnauthenticatedUser()
+
+    return await get_current_user_required_by_token(access_token, db)
+
+
+async def get_current_user_required_by_cookie(
+    db: DBDependency,
+    access_token: CookieDependency = None,
+) -> db_models.User | web_models.UnauthenticatedUser:
+    """Get the current user from the cookie."""
+    return await get_current_user_required_by_token(access_token, db)
+
+
+async def get_current_user_optional_by_token(
     token: OptionalTokenDependency,
     db: DBDependency,
-) -> api_models.UserFromAuth | None:
+) -> web_models.UserFromAuth | None:
     """Get the current user from the token."""
     if token:
-        return await get_current_user_auth_required(token, db)
-    return UnauthenticatedUser()
+        return await get_current_user_required_by_token(token, db)
+    return web_models.UnauthenticatedUser()
 
 
-async def get_current_user_auth_required(
+async def get_current_user_required_by_token(
     token: TokenDependency, db: DBDependency
-) -> api_models.UserFromAuth:
+) -> web_models.UserFromAuth:
     """Get the current user from the token."""
+    if not token:
+        raise errors.UserNotAuthenticatedError
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except jwt.JWTError as e:
@@ -65,12 +76,12 @@ async def get_current_user_auth_required(
     # user_role: str = payload.get("role")
     if not all((username, user_id)):
         raise errors.UserNotValidatedError
-    return _get_current_user_by_id(user_id, db)
+    return get_current_user_by_id(user_id, db)
 
 
 def create_access_token(
     user: db_models.User, expires_delta: timedelta
-) -> api_models.Token:
+) -> web_models.Token:
     expires_at = datetime.now(timezone.utc) + expires_delta
     to_encode = {
         "sub": user.username,
@@ -79,7 +90,7 @@ def create_access_token(
         "exp": expires_at,
     }
     access_token = jwt.encode(claims=to_encode, key=SECRET_KEY, algorithm=ALGORITHM)
-    return api_models.Token(access_token=access_token, token_type="bearer")
+    return web_models.Token(access_token=access_token, token_type="bearer")
 
 
 def authenticate_user(
@@ -101,7 +112,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt_context.verify(plain_password, hashed_password)
 
 
-def _get_current_user_by_id(user_id: ft.Id, db: DBDependency) -> db_models.User:
+def get_current_user_by_id(user_id: ft.Id, db: DBDependency) -> db_models.User:
     """Get a user by id."""
     if (
         user_model := db.query(db_models.User)
@@ -113,9 +124,15 @@ def _get_current_user_by_id(user_id: ft.Id, db: DBDependency) -> db_models.User:
 
 
 #  ----------- Exported Dependencies -----------
-RequiredUserDependency = Annotated[
-    db_models.User, Depends(get_current_user_auth_required)
+TokenRequiredUser = Annotated[
+    db_models.User, Depends(get_current_user_required_by_token)
 ]
-OptionalUserDependency = Annotated[
-    db_models.User | UnauthenticatedUser, Depends(get_current_user_auth_optional)
+TokenOptionalUser = Annotated[
+    db_models.User | web_models.UnauthenticatedUser,
+    Depends(get_current_user_optional_by_token),
 ]
+LoggedInUserOptional = Annotated[
+    db_models.User | web_models.UnauthenticatedUser,
+    Depends(get_current_user_optional_by_cookie),
+]
+LoggedInUser = Annotated[db_models.User, Depends(get_current_user_required_by_cookie)]

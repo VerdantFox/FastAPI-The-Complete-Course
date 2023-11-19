@@ -3,9 +3,10 @@ from typing import cast
 from fastapi import APIRouter, status
 
 import datastore.db_models as db_models
-import web.api.field_types as ft
+import web.field_types as ft
 from datastore.database import DBDependency, Session
-from web.api import api_models, auth, errors
+from web import auth
+from web.api import api_models, errors
 
 router = APIRouter(tags=["todos"], prefix="/todos")
 
@@ -15,7 +16,7 @@ router = APIRouter(tags=["todos"], prefix="/todos")
     "", response_model=list[api_models.TodoOutLimited], status_code=status.HTTP_200_OK
 )
 async def get_todos(
-    current_user: auth.RequiredUserDependency, db: DBDependency
+    current_user: auth.TokenRequiredUser, db: DBDependency
 ) -> list[db_models.Todo]:
     """Get todos, filtering on the desired fields."""
     query = db.query(db_models.Todo)
@@ -28,7 +29,7 @@ async def get_todos(
     "/{todo_id}", status_code=status.HTTP_200_OK, response_model=api_models.TodoOutFull
 )
 async def get_todo(
-    current_user: auth.RequiredUserDependency, todo_id: ft.Id, db: DBDependency
+    current_user: auth.TokenRequiredUser, todo_id: ft.Id, db: DBDependency
 ) -> db_models.Todo:
     """Get a todo by id."""
     return _get_todo_by_id(current_user=current_user, todo_id=todo_id, db=db)
@@ -38,7 +39,7 @@ async def get_todo(
     "", status_code=status.HTTP_201_CREATED, response_model=api_models.TodoOutFull
 )
 async def create_todo(
-    current_user: auth.RequiredUserDependency,
+    current_user: auth.TokenRequiredUser,
     todo_in: api_models.TodoInPost,
     db: DBDependency,
 ) -> db_models.Todo:
@@ -60,7 +61,7 @@ async def create_todo(
     "/{todo_id}", status_code=status.HTTP_200_OK, response_model=api_models.TodoOutFull
 )
 async def update_todo(
-    current_user: auth.RequiredUserDependency,
+    current_user: auth.TokenRequiredUser,
     todo_id: ft.Id,
     todo_in: api_models.TodoInPatch,
     db: DBDependency,
@@ -76,7 +77,7 @@ async def update_todo(
 
 @router.delete("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete(
-    current_user: auth.RequiredUserDependency, todo_id: ft.Id, db: DBDependency
+    current_user: auth.TokenRequiredUser, todo_id: ft.Id, db: DBDependency
 ) -> None:
     """Delete a todo."""
     todo_model = _get_todo_by_id(current_user=current_user, todo_id=todo_id, db=db)

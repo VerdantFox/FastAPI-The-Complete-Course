@@ -1,22 +1,10 @@
 from pydantic import BaseModel, EmailStr, Field
 
-import web.api.field_types as ft
+import web.field_types as ft
 from permissions import Role
 
 
-# ----------- Auth Models -----------
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
 # ----------- User Models -----------
-class UserFromAuth(BaseModel):
-    id: int
-    username: ft.Min3Field
-    user_role: ft.Min3Field
-
-
 class UserInPost(BaseModel):
     email: EmailStr
     username: ft.Min3Field

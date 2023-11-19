@@ -4,6 +4,5 @@ from web.api.routes import auth, todos, users
 
 app = FastAPI()
 
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(todos.router)
+for route in (auth, users, todos):
+    app.include_router(route.router)

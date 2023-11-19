@@ -1,7 +1,15 @@
 module.exports = {
-  content: ['./*.html'],
+  content: [
+    "./web/web_app/templates/**/*.html",
+    "./web/web_app/static/**/*.js",
+    "./web/web_app/**/*.py",
+  ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["Roboto", "sans-serif"],
+      },
+    },
   },
-  plugins: [],
-}
+  plugins: [require("@tailwindcss/forms")],
+};

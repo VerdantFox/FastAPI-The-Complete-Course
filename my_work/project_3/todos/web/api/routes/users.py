@@ -5,8 +5,9 @@ from fastapi import APIRouter, status
 from datastore import db_models
 from datastore.database import DBDependency, Session
 from permissions import Role
-from web.api import api_models, auth, errors
-from web.api import field_types as ft
+from web import auth
+from web import field_types as ft
+from web.api import api_models, errors
 
 # ----------- Routers -----------
 router = APIRouter(tags=["users"], prefix="/users")
@@ -17,7 +18,7 @@ router = APIRouter(tags=["users"], prefix="/users")
     "", response_model=list[api_models.UserOutLimited], status_code=status.HTTP_200_OK
 )
 async def get_users(
-    current_user: auth.OptionalUserDependency, db: DBDependency
+    current_user: auth.TokenOptionalUser, db: DBDependency
 ) -> list[db_models.User]:
     """Get users, filtering on the desired fields."""
     query = db.query(db_models.User)
@@ -31,7 +32,7 @@ async def get_users(
     status_code=status.HTTP_200_OK,
     response_model=api_models.UserOutFull,
 )
-async def get_current_user(current_user: auth.OptionalUserDependency) -> db_models.User:
+async def get_current_user(current_user: auth.TokenOptionalUser) -> db_models.User:
     """Get the current user."""
 
     return current_user
@@ -41,7 +42,7 @@ async def get_current_user(current_user: auth.OptionalUserDependency) -> db_mode
     "/{user_id}", status_code=status.HTTP_200_OK, response_model=api_models.UserOutFull
 )
 async def get_user(
-    current_user: auth.RequiredUserDependency, user_id: ft.Id, db: DBDependency
+    current_user: auth.TokenRequiredUser, user_id: ft.Id, db: DBDependency
 ) -> db_models.User:
     """Get a user by id."""
     return _get_user_by_id(current_user=current_user, user_id=user_id, db=db)
@@ -75,7 +76,7 @@ async def create_user(
     response_model=api_models.UserOutFull,
 )
 async def update_current_user(
-    current_user: auth.RequiredUserDependency,
+    current_user: auth.TokenRequiredUser,
     user_in: api_models.UserInPatch,
     db: DBDependency,
 ) -> db_models.User:
@@ -94,7 +95,7 @@ async def update_current_user(
     "/{user_id}", status_code=status.HTTP_200_OK, response_model=api_models.UserOutFull
 )
 async def update_user(
-    current_user: auth.RequiredUserDependency,
+    current_user: auth.TokenRequiredUser,
     user_id: ft.Id,
     user_in: api_models.UserInPatch,
     db: DBDependency,
@@ -113,7 +114,7 @@ async def update_user(
 
 @router.delete("/current-user", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_current_user(
-    current_user: auth.RequiredUserDependency, db: DBDependency
+    current_user: auth.TokenRequiredUser, db: DBDependency
 ) -> None:
     """Delete a user."""
     user_model = _get_user_by_id(
@@ -125,7 +126,7 @@ async def delete_current_user(
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete(
-    current_user: auth.RequiredUserDependency, user_id: ft.Id, db: DBDependency
+    current_user: auth.TokenRequiredUser, user_id: ft.Id, db: DBDependency
 ) -> None:
     """Delete a user."""
     user_model = _get_user_by_id(current_user=current_user, user_id=user_id, db=db)
