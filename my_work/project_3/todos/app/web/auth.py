@@ -20,7 +20,6 @@ optional_oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth", auto_error=False)
 # ----------- Imported Dependencies -----------
 TokenDependency = Annotated[str, Depends(oauth2_bearer)]
 OptionalTokenDependency = Annotated[str | None, Depends(optional_oauth2_bearer)]
-RequiredCookieDependency = Annotated[str, Cookie()]
 OptionalCookieDependency = Annotated[str | None, Cookie()]  # key matches param name
 
 
@@ -46,9 +45,12 @@ async def get_current_user_optional_by_cookie(
 
 async def get_current_user_required_by_cookie(
     db: DBDependency,
-    access_token: RequiredCookieDependency,
+    access_token: OptionalCookieDependency = None,
 ) -> db_models.User | web_models.UnauthenticatedUser:
     """Get the current user from the cookie."""
+    if not access_token:
+        raise errors.UserNotAuthenticatedError
+
     return await get_current_user_required_by_token(db=db, access_token=access_token)
 
 

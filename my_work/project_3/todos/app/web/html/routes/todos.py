@@ -11,6 +11,7 @@ from wtforms import (
 
 from app.datastore import db_models
 from app.datastore.database import DBDependency
+from app.services import todos
 from app.web import errors
 from app.web.api import api_models
 from app.web.auth import LoggedInUser
@@ -19,11 +20,13 @@ from app.web.html.const import templates
 # ----------- Routers -----------
 router = APIRouter(tags=["todos"], prefix="/todos")
 
+TODO_PARTIAL_TEMPLATE = "todos/partials/todo.html"
+
 
 @router.get("", response_class=HTMLResponse)
 async def get_todos(request: Request, db: DBDependency, current_user: LoggedInUser):
-    query = db.query(db_models.Todo).filter(db_models.Todo.owner_id == current_user.id)
-    todos_list_db = cast(list[db_models.Todo], query.all())
+    todos_list_db = await todos.get_todos_list(db, current_user)
+
     todos_list_api = [
         api_models.TodoOutLimited(**todo.__dict__) for todo in todos_list_db
     ]
@@ -46,18 +49,12 @@ async def add_todo(request: Request, db: DBDependency, current_user: LoggedInUse
     create_todo_form = CreateTodoForm(**form_data)
     if not create_todo_form.validate():
         return HTMLResponse(content="", status_code=status.HTTP_400_BAD_REQUEST)
-    todo = db_models.Todo(
-        title=create_todo_form.title.data,
-        description="Doesn't matter...",
-        priority=1,
-        owner_id=current_user.id,
-        completed=False,
+    todo = await todos.add_todo(
+        db=db, current_user=current_user, title=create_todo_form.title.data
     )
-    db.add(todo)
-    db.commit()
 
     return templates.TemplateResponse(
-        "todos/partials/todo.html",
+        TODO_PARTIAL_TEMPLATE,
         {"request": request, "todo": todo},
     )
 
@@ -87,7 +84,7 @@ async def update_todo(
     todo.completed = update_todo_form.completed.data
     db.commit()
     return templates.TemplateResponse(
-        "todos/partials/todo.html",
+        TODO_PARTIAL_TEMPLATE,
         {"request": request, "todo": todo},
     )
 
@@ -107,6 +104,6 @@ async def delete_todo(
     db.delete(todo)
     db.commit()
     return templates.TemplateResponse(
-        "todos/partials/todo.html",
+        TODO_PARTIAL_TEMPLATE,
         {"request": request, "todo": todo},
     )
