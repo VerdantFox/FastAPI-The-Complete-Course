@@ -27,7 +27,7 @@ OptionalCookieDependency = Annotated[str | None, Cookie()]  # key matches param 
 # ----------- User Constants (should be in secrets) -----------
 SECRET_KEY = "a32739cd7e677c1b8dfcf560a68d59793efdd035fa14dc488192b815d3b5e498"
 ALGORITHM = "HS256"
-TOKEN_EXPIRATION = timedelta(minutes=1)
+TOKEN_EXPIRATION = timedelta(minutes=15)
 
 
 # ------------ Functions ------------
@@ -46,7 +46,7 @@ async def get_current_user_optional_by_cookie(
 
 async def get_current_user_required_by_cookie(
     db: DBDependency,
-    access_token: RequiredCookieDependency = None,
+    access_token: RequiredCookieDependency,
 ) -> db_models.User | web_models.UnauthenticatedUser:
     """Get the current user from the cookie."""
     return await get_current_user_required_by_token(db=db, access_token=access_token)
