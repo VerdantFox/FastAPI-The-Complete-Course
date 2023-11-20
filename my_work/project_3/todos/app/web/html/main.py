@@ -6,7 +6,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.web.html import flash_messages
 from app.web.html.const import STATIC_DIR, templates
 from app.web.html.error_handlers import register_error_handlers
-from app.web.html.routes import errors, todos, users
+from app.web.html.routes import auth, errors, todos, users
 
 SESSION_SECRET = "SUPER-SECRET-KEY"
 
@@ -14,7 +14,7 @@ app = FastAPI()
 
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 
-routes = [todos, users, errors]
+routes = [auth, errors, todos, users]
 for route in routes:
     app.include_router(route.router)
 

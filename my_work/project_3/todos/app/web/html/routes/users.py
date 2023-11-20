@@ -10,9 +10,9 @@ from app.datastore import db_models
 from app.datastore.database import DBDependency
 from app.permissions import Role
 from app.web import auth, errors
-from app.web.api.routes.auth import login_for_access_token
 from app.web.html.const import templates
 from app.web.html.flash_messages import FlashCategory, FlashMessage
+from app.web.html.routes.auth import login_for_access_token
 
 # ----------- Routers -----------
 router = APIRouter(tags=["users"], prefix="/users")
@@ -37,8 +37,12 @@ async def login_get(
     login_form = LoginForm()
     if username:
         login_form.username.data = username
+    headers = {
+        "HX-Replace-Url": str(request.url_for("html:login_get")),
+        "HX-Refresh": "true",
+    }
     return templates.TemplateResponse(
-        LOGIN_TEMPLATE, {"request": request, "form": login_form}
+        LOGIN_TEMPLATE, {"request": request, "form": login_form}, headers=headers
     )
 
 

@@ -8,6 +8,7 @@ from app.permissions import Role
 from app.web import auth
 from app.web import field_types as ft
 from app.web.api import api_models, errors
+from app.web.web_models import UnauthenticatedUser
 
 # ----------- Routers -----------
 router = APIRouter(tags=["users"], prefix="/users")
@@ -32,9 +33,10 @@ async def get_users(
     status_code=status.HTTP_200_OK,
     response_model=api_models.UserOutFull,
 )
-async def get_current_user(current_user: auth.TokenOptionalUser) -> db_models.User:
+async def get_current_user(
+    current_user: auth.TokenOptionalUser
+) -> db_models.User | UnauthenticatedUser:
     """Get the current user."""
-
     return current_user
 
 

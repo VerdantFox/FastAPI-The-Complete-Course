@@ -3,7 +3,11 @@
     id="todo-{{ todo.id }}"
     class=" hover:bg-teal-50 py-6 px-4 text-lg {% if todo.completed %}line-through{% endif %}"
   >
-    <form class="group flex justify-between items-center gap-6">
+    <form
+      class="group flex justify-between items-center gap-6"
+      hx-target-302="html"
+      hx-target-401="html"
+    >
       <input name="todo_id" type="hidden" value="{{ todo.id }}" />
       <input
         type="checkbox"

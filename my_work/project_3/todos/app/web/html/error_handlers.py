@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
 from fastapi.responses import RedirectResponse
 
 from app.web import errors
@@ -16,7 +16,9 @@ def register_error_handlers(app: FastAPI) -> None:
             msg="Login session expired. Please log in again.",
             category=FlashCategory.ERROR,
         )
-        return RedirectResponse(request.url_for("html:login_get"))
+        return RedirectResponse(
+            request.url_for("html:login_get"), status_code=status.HTTP_303_SEE_OTHER
+        )
 
     @app.exception_handler(errors.UserNotAuthenticatedError)
     async def not_logged_in_handler(
@@ -26,7 +28,9 @@ def register_error_handlers(app: FastAPI) -> None:
             msg="Please log in to use that service.",
             category=FlashCategory.ERROR,
         )
-        return RedirectResponse(request.url_for("html:login_get"))
+        return RedirectResponse(
+            request.url_for("html:login_get"), status_code=status.HTTP_303_SEE_OTHER
+        )
 
     @app.exception_handler(errors.WebError)
     async def web_error_handler(

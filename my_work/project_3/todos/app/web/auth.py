@@ -3,13 +3,13 @@ from typing import Annotated
 
 from fastapi import Cookie, Depends
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from app.web import field_types as ft
 from app.datastore import db_models
 from app.datastore.database import DBDependency
 from app.web import errors, web_models
+from app.web import field_types as ft
 
 # ----------- Constants -----------
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -20,17 +20,19 @@ optional_oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth", auto_error=False)
 # ----------- Imported Dependencies -----------
 TokenDependency = Annotated[str, Depends(oauth2_bearer)]
 OptionalTokenDependency = Annotated[str | None, Depends(optional_oauth2_bearer)]
-CookieDependency = Annotated[str | None, Cookie()]  # key matches param name
+RequiredCookieDependency = Annotated[str, Cookie()]
+OptionalCookieDependency = Annotated[str | None, Cookie()]  # key matches param name
 
 
 # ----------- User Constants (should be in secrets) -----------
 SECRET_KEY = "a32739cd7e677c1b8dfcf560a68d59793efdd035fa14dc488192b815d3b5e498"
 ALGORITHM = "HS256"
+TOKEN_EXPIRATION = timedelta(minutes=1)
 
 
 # ------------ Functions ------------
 async def get_current_user_optional_by_cookie(
-    db: DBDependency, access_token: CookieDependency = None
+    db: DBDependency, access_token: OptionalCookieDependency = None
 ) -> db_models.User | web_models.UnauthenticatedUser:
     """Get the current user from the cookie.
 
@@ -39,63 +41,89 @@ async def get_current_user_optional_by_cookie(
     if not access_token:
         return web_models.UnauthenticatedUser()
 
-    return await get_current_user_required_by_token(access_token, db)
+    return await get_current_user_required_by_token(db=db, access_token=access_token)
 
 
 async def get_current_user_required_by_cookie(
     db: DBDependency,
-    access_token: CookieDependency = None,
+    access_token: RequiredCookieDependency = None,
 ) -> db_models.User | web_models.UnauthenticatedUser:
     """Get the current user from the cookie."""
-    return await get_current_user_required_by_token(access_token, db)
+    return await get_current_user_required_by_token(db=db, access_token=access_token)
 
 
 async def get_current_user_optional_by_token(
-    token: OptionalTokenDependency,
-    db: DBDependency,
-) -> web_models.UserFromAuth | None:
+    token: OptionalTokenDependency, db: DBDependency
+) -> db_models.User | web_models.UnauthenticatedUser:
     """Get the current user from the token."""
     if token:
-        return await get_current_user_required_by_token(token, db)
+        return await get_current_user_required_by_token(db=db, access_token=token)
     return web_models.UnauthenticatedUser()
 
 
 async def get_current_user_required_by_token(
-    token: TokenDependency, db: DBDependency
-) -> web_models.UserFromAuth:
-    """Get the current user from the token."""
-    if not token:
+    db: DBDependency, access_token: TokenDependency
+) -> db_models.User:
+    """Get the current user from the access_token."""
+    if not access_token:
         raise errors.UserNotAuthenticatedError
 
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except jwt.JWTError as e:
-        raise errors.UserNotValidatedError from e
-    username: str = payload.get("sub")
-    user_id: int = payload.get("user_id")
-    # user_role: str = payload.get("role")
-    if not all((username, user_id)):
-        raise errors.UserNotValidatedError
+    payload = await parse_access_token(access_token=access_token)
+    user_id = int(payload.get("user_id", 0))  # type: ignore[arg-type]
     return get_current_user_by_id(user_id, db)
 
 
-def create_access_token(
-    user: db_models.User, expires_delta: timedelta
+async def refresh_token(
+    access_token: str, remaining_time: int | None = None
 ) -> web_models.Token:
-    expires_at = datetime.now(timezone.utc) + expires_delta
-    to_encode = {
+    """Only refresh the token if it has less than time_remaining minutes left."""
+    payload = await parse_access_token(access_token=access_token)
+
+    if remaining_time is not None:
+        current_expires_at_float = float(payload["exp"])  # type: ignore[arg-type]
+        current_expires_at = datetime.fromtimestamp(
+            current_expires_at_float, tz=timezone.utc
+        )
+        if current_expires_at - datetime.now(timezone.utc) > timedelta(
+            minutes=remaining_time
+        ):
+            return encode_access_token(payload=payload)
+
+    new_expires_at = datetime.now(timezone.utc) + TOKEN_EXPIRATION
+    payload["exp"] = new_expires_at
+    return encode_access_token(payload=payload)
+
+
+async def parse_access_token(access_token: str) -> dict[str, str | int | datetime]:
+    """Parse the access token."""
+    try:
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError as e:
+        raise errors.UserNotValidatedError from e
+    username: str = payload.get("sub", "")
+    user_id: int = payload.get("user_id", 0)
+    if not all((username, user_id)):
+        raise errors.UserNotValidatedError
+    return payload
+
+
+def create_access_token(user: db_models.User) -> web_models.Token:
+    expires_at = datetime.now(timezone.utc) + TOKEN_EXPIRATION
+    payload: dict[str, str | int | datetime] = {
         "sub": user.username,
         "user_id": user.id,
         "role": user.role,
         "exp": expires_at,
     }
-    access_token = jwt.encode(claims=to_encode, key=SECRET_KEY, algorithm=ALGORITHM)
+    return encode_access_token(payload=payload)
+
+
+def encode_access_token(payload: dict[str, str | int | datetime]) -> web_models.Token:
+    access_token = jwt.encode(claims=payload, key=SECRET_KEY, algorithm=ALGORITHM)
     return web_models.Token(access_token=access_token, token_type="bearer")
 
 
-def authenticate_user(
-    username: str, password: str, db: DBDependency
-) -> db_models.User | None:
+def authenticate_user(username: str, password: str, db: DBDependency) -> db_models.User:
     user = db.query(db_models.User).filter(db_models.User.username == username).first()
     if not user:
         raise errors.UserNotAuthenticatedError
