@@ -52,6 +52,7 @@ async def add_todo(request: Request, db: DBDependency, current_user: LoggedInUse
     todo = await todos.add_todo(
         db=db, current_user=current_user, title=create_todo_form.title.data
     )
+    db.refresh(todo)
 
     return templates.TemplateResponse(
         TODO_PARTIAL_TEMPLATE,
@@ -83,6 +84,7 @@ async def update_todo(
     todo.title = update_todo_form.title.data
     todo.completed = update_todo_form.completed.data
     db.commit()
+    db.refresh(todo)
     return templates.TemplateResponse(
         TODO_PARTIAL_TEMPLATE,
         {"request": request, "todo": todo},

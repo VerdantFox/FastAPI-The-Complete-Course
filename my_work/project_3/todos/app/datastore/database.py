@@ -11,15 +11,12 @@ engine = create_engine(DB_URL, connect_args={"check_same_thread": False})
 # engine = create_engine(DB_URL)
 
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(engine, expire_on_commit=False)
 
 
 def get_db() -> Generator[Session, None, None]:
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    with SessionLocal.begin() as session:
+        yield session
 
 
 DBDependency = Annotated[Session, Depends(get_db)]
